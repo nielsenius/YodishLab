@@ -1,0 +1,55 @@
+Objectives
+- Utilize external API
+- Make HTTP requests
+- Receive HTTP responses
+- Error handling
+- Test-driven development
+
+Instructions
+
+1. In this lab we’ll be creating an app to convert English to Yodish. If you’re unfamiliar with the Star Wars character Yoda, then watch this video (https://www.youtube.com/watch?v=lXNwJymretA&spfreload=10) on YouTube for an introduction. The app we create will have a single view and view controller plus a YodishAPI class and associated test cases. Clone the Yodish repository from <url> to get started.
+
+2. Open the YodaSpeak Xcode project. Before moving forward on any coding add the Quick and Nimble projects to the YodaSpeak project. Adding these projects can be tricky, so follow these instructions (https://github.com/nielsenius/TempConverter/tree/master/QuickNimbleSetup) if you want.
+
+3. The API we’ll be using to convert English to Yodish can be found here (https://www.mashape.com/ismaelc/yoda-speak). Take a look at the documentation to gain an understanding for the HTTP request this app will be making. Will the request be a GET or a POST? Hint: what HTTP verb from 67-272 is associated with read?
+
+4. Look at YodishAPI.swift. This class contains a single class function called request which takes a String and returns a String. You will be implementing the request function with help from these instructions and by looking at the test cases in YodaSpeakTests.swift.
+
+5. First, add a conditional for an empty string input. If the input sentence is blank, then return the error message found in the test cases.
+
+6. Next add the following code to replace spaces in the input string with plus signs.
+	// replaces spaces with + for API call
+        var sentence = sentence.stringByReplacingOccurrencesOfString(" ", withString: "+", options: NSStringCompareOptions.LiteralSearch, range: nil)
+
+7. The next action our function needs to take is setting up the HTTP request. Add the following code below what is already there.
+	// setup the HTTP request
+        let url = NSURL(string: "https://yoda.p.mashape.com/yoda?sentence=\(sentence)")
+        let request = NSMutableURLRequest(URL: url!)
+        request.HTTPMethod = "GET"
+        request.setValue("b6DXOx972SmshhUwaSS3Luzg7dpqp16hL3WjsnlCVM8MOFW8x5", forHTTPHeaderField: "X-Mashape-Key")
+        var response: NSURLResponse?
+        var error: NSErrorPointer = nil
+
+8. After setting that up we will be making a synchronous HTTP request. This means that the app will wait for a response before taking other action. An asynchronous request would allow the app to move on to other tasks while waiting for a response in the background. If you’re interested, look into Swift asynchronous HTTP requests after completing this lab. Here is the code to make the request.
+	// make a synchronous HTTP request
+        var data = NSURLConnection.sendSynchronousRequest(request, returningResponse: &response, error: error)
+
+9. There is a chance that this request could fail and data would be set to nil. If this happens a runtime error could result. After the request code add a conditional to check for nil and return the error seen in the test cases.
+
+10. The last thing we’ll be doing is converting the response to a string and checking that this string is not an error message from the API. Use this code to do so. Now your YodishAPI class is complete.
+	// convert the returned data to a string
+        var reply = NSString(data: data!, encoding: NSUTF8StringEncoding)
+        // check that the returned data is valid
+        if reply == "{\"message\":\"Invalid Mashape Key\"}" {
+            return "ERROR: API key is not valid"
+        } else {
+            return String(reply!)
+        }
+
+11. Look at Main.storyboard. You should see a View Controller with a picture of Yoda. In this view we want to create a GUI for users to type an English sentence and convert it to Yodish. Add a UILabel that says something like “Enter an English Sentence”. Below the label add two UITextFields. Between the two textfields place a UIButton that says something like “Convert to Yodish”.
+
+12. Take a few minutes to make sure that the UI conforms to good mobile design practices and add Auto Layout constraints to the elements you added.
+
+13. Open ViewController.swift where you should see a blank UIViewController class. Remember that our ViewController class handles inputs from the storyboard. Add two IBOutlets; one for the English textfield and one for the Yodish textfield. The last thing you need to add is an IBAction for the convert button. IBActions are specially labeled functions. We want this function to set the text in the Yodish textfield equal to the output of our YodishAPI call given the English sentence.
+
+14. Run the application and give it a try. Enter an English sentence and see what Yoda would say instead. Make sure you run the test cases to ensure that your API call has the proper components.
